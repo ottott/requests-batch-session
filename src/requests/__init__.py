@@ -182,6 +182,7 @@ from .exceptions import (
     URLRequired,
 )
 from .models import PreparedRequest, Request, Response
+from .batch import BatchSession
 from .sessions import Session, session
 from .status_codes import codes
 
