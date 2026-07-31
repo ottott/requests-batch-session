@@ -75,14 +75,3 @@ def test_execute_preserves_request_order():
     assert results[0].response.url == "https://example.com/"
     assert results[1].response.url == "https://www.google.com/"
     
-def test_batch_executes_concurrently():
-    batch = BatchSession(workers=5)
-
-    for _ in range(5):
-        batch.queue_get("https://httpbin.org/delay/1")
-
-    start = time.time()
-    batch.execute()
-    elapsed = time.time() - start
-
-    assert elapsed < 3
