@@ -36,8 +36,58 @@ class BatchSession(Session):
             )
         )
     
+    def queue_get(
+        self,
+        url: str,
+        **kwargs: Any,
+    ) -> None:
+        self.queue_request("GET", url, **kwargs)
+        
+    def queue_post(
+        self,
+        url: str,
+        **kwargs: Any,
+    ) -> None:
+        self.queue_request("POST", url, **kwargs)
+        
+    def queue_put(
+        self,
+        url: str,
+        **kwargs: Any,
+    ) -> None:
+        self.queue_request("PUT", url, **kwargs)
+    
+    def queue_patch(
+        self,
+        url: str,
+        **kwargs: Any,
+    ) -> None:
+        self.queue_request("PATCH", url, **kwargs)
+        
+    def queue_delete(
+        self,
+        url: str,
+        **kwargs: Any,
+    ) -> None:
+        self.queue_request("DELETE", url, **kwargs)
+        
+    def queue_head(
+        self,
+        url: str,
+        **kwargs: Any,
+    ) -> None:
+        self.queue_request("HEAD", url, **kwargs)
+        
+    def queue_options(
+        self,
+        url: str,
+        **kwargs: Any,
+    ) -> None:
+        self.queue_request("OPTIONS", url, **kwargs)
+    
     def queue_size(self) -> int:
         return len(self._queue) 
+    
     
     def _execute_request(self, item: QueuedRequest):
         
