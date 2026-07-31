@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from . import _internal_utils as _t
-from .models import Request
+from .models import Request, Response
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -11,6 +11,12 @@ from concurrent.futures import ThreadPoolExecutor
 class QueuedRequest:
     request: Request
     send_kwargs: dict[str, Any]
+    
+@dataclass
+class BatchResult:
+    success: bool
+    response: Response | None = None
+    exception: Exception | None = None
 
 class BatchSession(Session):
     def __init__(self, workers: int = 4):
@@ -91,21 +97,31 @@ class BatchSession(Session):
     
     def _execute_request(self, item: QueuedRequest):
         
-        response = super().request(
-            method=item.request.method,
-            url=item.request.url,
-            params=item.request.params,
-            data=item.request.data,
-            headers=item.request.headers,
-            cookies=item.request.cookies,
-            files=item.request.files,
-            auth=item.request.auth,
-            hooks=item.request.hooks,
-            json=item.request.json,
-            **item.send_kwargs,
-        )
-        
-        return response
+        try:    
+            response = super().request(
+                method=item.request.method,
+                url=item.request.url,
+                params=item.request.params,
+                data=item.request.data,
+                headers=item.request.headers,
+                cookies=item.request.cookies,
+                files=item.request.files,
+                auth=item.request.auth,
+                hooks=item.request.hooks,
+                json=item.request.json,
+                **item.send_kwargs,
+            )
+            
+            return BatchResult(
+                success=True,
+                response=response
+            )
+            
+        except Exception as e:
+            return BatchResult(
+                success=False,
+                exception=e
+            )
         
     
     def execute(self):
