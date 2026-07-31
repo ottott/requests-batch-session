@@ -1,11 +1,10 @@
-from .sessions import Session
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Any
 
-from . import _internal_utils as _t
 from .models import Request, Response
+from .sessions import Session
 
-from concurrent.futures import ThreadPoolExecutor
 
 @dataclass
 class QueuedRequest:
@@ -19,7 +18,7 @@ class BatchResult:
     exception: Exception | None = None
 
 class BatchSession(Session):
-    def __init__(self, workers: int = 4):
+    def __init__(self, workers: int = 8) -> None:
         super().__init__()
         self.workers = workers
         self._queue: list[QueuedRequest] = []
@@ -95,7 +94,9 @@ class BatchSession(Session):
         return len(self._queue) 
     
     
-    def _execute_request(self, item: QueuedRequest):
+    def _execute_request(self, item: QueuedRequest) -> BatchResult:
+        assert item.request.method is not None
+        assert item.request.url is not None
         
         try:    
             response = super().request(
@@ -124,8 +125,7 @@ class BatchSession(Session):
             )
         
     
-    def execute(self):
-
+    def execute(self) -> list[BatchResult]:
         with ThreadPoolExecutor(max_workers=self.workers) as executor:
             responses = list(
                 executor.map(self._execute_request, self._queue)
